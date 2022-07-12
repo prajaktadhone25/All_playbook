@@ -1,0 +1,5850 @@
+---
+- hosts: localhost
+  tasks:
+    - name: Get Ansible Date
+      setup:
+        filter: "ansible_date_time"
+        gather_subset: "!all"
+      register: key_date
+    - debug: var=key_date.ansible_facts.ansible_date_time.date
+
+
+    - name: Store DTG as Fact
+      set_fact:
+        DTG: "{{ ansible_date_time }}"
+      register: DTG
+    - debug:
+        msg: "{{ ansible_date_time }}"
+
+    - name: craete variable for DTG
+      set_fact: datetime={{ DTG.ansible_facts.DTG.time +'_'+ DTG.ansible_facts.DTG.date +'_'}}
+    - debug: var=datetime
+
+
+- name: Running config pre check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check before power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+      register: pre_config
+
+    - name: print running config pre check
+      debug:
+        msg: "{{ pre_config }}"
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_pre
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+
+    - name: power down the device and pause for 60 sec
+      pause:
+        minutes: 1
+
+- name: Running config post check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check after power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+
+      register: post_config
+
+    - name: print running config post check
+      debug:
+        var: post_config
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_post
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template_2.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+
+
+    - name: show the differnce between files
+      copy:
+          src: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+          dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+      check_mode: yes
+      diff: yes
+      register: diff
+    - name: print running config post check
+      debug:
+        msg: "{{ diff }}"
+
+
+---
+- hosts: localhost
+  tasks:
+    - name: Get Ansible Date
+      setup:
+        filter: "ansible_date_time"
+        gather_subset: "!all"
+      register: key_date
+    - debug: var=key_date.ansible_facts.ansible_date_time.date
+
+
+    - name: Store DTG as Fact
+      set_fact:
+        DTG: "{{ ansible_date_time }}"
+      register: DTG
+    - debug:
+        msg: "{{ ansible_date_time }}"
+
+    - name: craete variable for DTG
+      set_fact: datetime={{ DTG.ansible_facts.DTG.time +'_'+ DTG.ansible_facts.DTG.date +'_'}}
+    - debug: var=datetime
+
+
+- name: Running config pre check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check before power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+      register: pre_config
+
+    - name: print running config pre check
+      debug:
+        msg: "{{ pre_config }}"
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_pre
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+
+    - name: power down the device and pause for 60 sec
+      pause:
+        minutes: 1
+
+- name: Running config post check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check after power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+
+      register: post_config
+
+    - name: print running config post check
+      debug:
+        var: post_config
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_post
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template_2.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+
+
+    - name: show the differnce between files
+      copy:
+          src: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+          dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+      check_mode: yes
+      diff: yes
+      register: diff
+    - name: print running config post check
+      debug:
+        msg: "{{ diff }}"
+
+
+---
+- hosts: localhost
+  tasks:
+    - name: Get Ansible Date
+      setup:
+        filter: "ansible_date_time"
+        gather_subset: "!all"
+      register: key_date
+    - debug: var=key_date.ansible_facts.ansible_date_time.date
+
+
+    - name: Store DTG as Fact
+      set_fact:
+        DTG: "{{ ansible_date_time }}"
+      register: DTG
+    - debug:
+        msg: "{{ ansible_date_time }}"
+
+    - name: craete variable for DTG
+      set_fact: datetime={{ DTG.ansible_facts.DTG.time +'_'+ DTG.ansible_facts.DTG.date +'_'}}
+    - debug: var=datetime
+
+
+- name: Running config pre check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check before power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+      register: pre_config
+
+    - name: print running config pre check
+      debug:
+        msg: "{{ pre_config }}"
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_pre
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+
+    - name: power down the device and pause for 60 sec
+      pause:
+        minutes: 1
+
+- name: Running config post check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check after power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+
+      register: post_config
+
+    - name: print running config post check
+      debug:
+        var: post_config
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_post
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template_2.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+
+
+    - name: show the differnce between files
+      copy:
+          src: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+          dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+      check_mode: yes
+      diff: yes
+      register: diff
+    - name: print running config post check
+      debug:
+        msg: "{{ diff }}"
+
+
+---
+- hosts: localhost
+  tasks:
+    - name: Get Ansible Date
+      setup:
+        filter: "ansible_date_time"
+        gather_subset: "!all"
+      register: key_date
+    - debug: var=key_date.ansible_facts.ansible_date_time.date
+
+
+    - name: Store DTG as Fact
+      set_fact:
+        DTG: "{{ ansible_date_time }}"
+      register: DTG
+    - debug:
+        msg: "{{ ansible_date_time }}"
+
+    - name: craete variable for DTG
+      set_fact: datetime={{ DTG.ansible_facts.DTG.time +'_'+ DTG.ansible_facts.DTG.date +'_'}}
+    - debug: var=datetime
+
+
+- name: Running config pre check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check before power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+      register: pre_config
+
+    - name: print running config pre check
+      debug:
+        msg: "{{ pre_config }}"
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_pre
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+
+    - name: power down the device and pause for 60 sec
+      pause:
+        minutes: 1
+
+- name: Running config post check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check after power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+
+      register: post_config
+
+    - name: print running config post check
+      debug:
+        var: post_config
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_post
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template_2.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+
+
+    - name: show the differnce between files
+      copy:
+          src: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+          dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+      check_mode: yes
+      diff: yes
+      register: diff
+    - name: print running config post check
+      debug:
+        msg: "{{ diff }}"
+
+
+---
+- hosts: localhost
+  tasks:
+    - name: Get Ansible Date
+      setup:
+        filter: "ansible_date_time"
+        gather_subset: "!all"
+      register: key_date
+    - debug: var=key_date.ansible_facts.ansible_date_time.date
+
+
+    - name: Store DTG as Fact
+      set_fact:
+        DTG: "{{ ansible_date_time }}"
+      register: DTG
+    - debug:
+        msg: "{{ ansible_date_time }}"
+
+    - name: craete variable for DTG
+      set_fact: datetime={{ DTG.ansible_facts.DTG.time +'_'+ DTG.ansible_facts.DTG.date +'_'}}
+    - debug: var=datetime
+
+
+- name: Running config pre check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check before power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+      register: pre_config
+
+    - name: print running config pre check
+      debug:
+        msg: "{{ pre_config }}"
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_pre
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+
+    - name: power down the device and pause for 60 sec
+      pause:
+        minutes: 1
+
+- name: Running config post check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check after power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+
+      register: post_config
+
+    - name: print running config post check
+      debug:
+        var: post_config
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_post
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template_2.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+
+
+    - name: show the differnce between files
+      copy:
+          src: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+          dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+      check_mode: yes
+      diff: yes
+      register: diff
+    - name: print running config post check
+      debug:
+        msg: "{{ diff }}"
+
+
+---
+- hosts: localhost
+  tasks:
+    - name: Get Ansible Date
+      setup:
+        filter: "ansible_date_time"
+        gather_subset: "!all"
+      register: key_date
+    - debug: var=key_date.ansible_facts.ansible_date_time.date
+
+
+    - name: Store DTG as Fact
+      set_fact:
+        DTG: "{{ ansible_date_time }}"
+      register: DTG
+    - debug:
+        msg: "{{ ansible_date_time }}"
+
+    - name: craete variable for DTG
+      set_fact: datetime={{ DTG.ansible_facts.DTG.time +'_'+ DTG.ansible_facts.DTG.date +'_'}}
+    - debug: var=datetime
+
+
+- name: Running config pre check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check before power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+      register: pre_config
+
+    - name: print running config pre check
+      debug:
+        msg: "{{ pre_config }}"
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_pre
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+
+    - name: power down the device and pause for 60 sec
+      pause:
+        minutes: 1
+
+- name: Running config post check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check after power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+
+      register: post_config
+
+    - name: print running config post check
+      debug:
+        var: post_config
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_post
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template_2.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+
+
+    - name: show the differnce between files
+      copy:
+          src: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+          dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+      check_mode: yes
+      diff: yes
+      register: diff
+    - name: print running config post check
+      debug:
+        msg: "{{ diff }}"
+
+
+---
+- hosts: localhost
+  tasks:
+    - name: Get Ansible Date
+      setup:
+        filter: "ansible_date_time"
+        gather_subset: "!all"
+      register: key_date
+    - debug: var=key_date.ansible_facts.ansible_date_time.date
+
+
+    - name: Store DTG as Fact
+      set_fact:
+        DTG: "{{ ansible_date_time }}"
+      register: DTG
+    - debug:
+        msg: "{{ ansible_date_time }}"
+
+    - name: craete variable for DTG
+      set_fact: datetime={{ DTG.ansible_facts.DTG.time +'_'+ DTG.ansible_facts.DTG.date +'_'}}
+    - debug: var=datetime
+
+
+- name: Running config pre check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check before power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+      register: pre_config
+
+    - name: print running config pre check
+      debug:
+        msg: "{{ pre_config }}"
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_pre
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+
+    - name: power down the device and pause for 60 sec
+      pause:
+        minutes: 1
+
+- name: Running config post check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check after power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+
+      register: post_config
+
+    - name: print running config post check
+      debug:
+        var: post_config
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_post
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template_2.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+
+
+    - name: show the differnce between files
+      copy:
+          src: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+          dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+      check_mode: yes
+      diff: yes
+      register: diff
+    - name: print running config post check
+      debug:
+        msg: "{{ diff }}"
+
+
+---
+- hosts: localhost
+  tasks:
+    - name: Get Ansible Date
+      setup:
+        filter: "ansible_date_time"
+        gather_subset: "!all"
+      register: key_date
+    - debug: var=key_date.ansible_facts.ansible_date_time.date
+
+
+    - name: Store DTG as Fact
+      set_fact:
+        DTG: "{{ ansible_date_time }}"
+      register: DTG
+    - debug:
+        msg: "{{ ansible_date_time }}"
+
+    - name: craete variable for DTG
+      set_fact: datetime={{ DTG.ansible_facts.DTG.time +'_'+ DTG.ansible_facts.DTG.date +'_'}}
+    - debug: var=datetime
+
+
+- name: Running config pre check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check before power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+      register: pre_config
+
+    - name: print running config pre check
+      debug:
+        msg: "{{ pre_config }}"
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_pre
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+
+    - name: power down the device and pause for 60 sec
+      pause:
+        minutes: 1
+
+- name: Running config post check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check after power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+
+      register: post_config
+
+    - name: print running config post check
+      debug:
+        var: post_config
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_post
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template_2.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+
+
+    - name: show the differnce between files
+      copy:
+          src: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+          dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+      check_mode: yes
+      diff: yes
+      register: diff
+    - name: print running config post check
+      debug:
+        msg: "{{ diff }}"
+
+
+---
+- hosts: localhost
+  tasks:
+    - name: Get Ansible Date
+      setup:
+        filter: "ansible_date_time"
+        gather_subset: "!all"
+      register: key_date
+    - debug: var=key_date.ansible_facts.ansible_date_time.date
+
+
+    - name: Store DTG as Fact
+      set_fact:
+        DTG: "{{ ansible_date_time }}"
+      register: DTG
+    - debug:
+        msg: "{{ ansible_date_time }}"
+
+    - name: craete variable for DTG
+      set_fact: datetime={{ DTG.ansible_facts.DTG.time +'_'+ DTG.ansible_facts.DTG.date +'_'}}
+    - debug: var=datetime
+
+
+- name: Running config pre check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check before power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+      register: pre_config
+
+    - name: print running config pre check
+      debug:
+        msg: "{{ pre_config }}"
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_pre
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+
+    - name: power down the device and pause for 60 sec
+      pause:
+        minutes: 1
+
+- name: Running config post check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check after power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+
+      register: post_config
+
+    - name: print running config post check
+      debug:
+        var: post_config
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_post
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template_2.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+
+
+    - name: show the differnce between files
+      copy:
+          src: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+          dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+      check_mode: yes
+      diff: yes
+      register: diff
+    - name: print running config post check
+      debug:
+        msg: "{{ diff }}"
+
+
+---
+- hosts: localhost
+  tasks:
+    - name: Get Ansible Date
+      setup:
+        filter: "ansible_date_time"
+        gather_subset: "!all"
+      register: key_date
+    - debug: var=key_date.ansible_facts.ansible_date_time.date
+
+
+    - name: Store DTG as Fact
+      set_fact:
+        DTG: "{{ ansible_date_time }}"
+      register: DTG
+    - debug:
+        msg: "{{ ansible_date_time }}"
+
+    - name: craete variable for DTG
+      set_fact: datetime={{ DTG.ansible_facts.DTG.time +'_'+ DTG.ansible_facts.DTG.date +'_'}}
+    - debug: var=datetime
+
+
+- name: Running config pre check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check before power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+      register: pre_config
+
+    - name: print running config pre check
+      debug:
+        msg: "{{ pre_config }}"
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_pre
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+
+    - name: power down the device and pause for 60 sec
+      pause:
+        minutes: 1
+
+- name: Running config post check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check after power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+
+      register: post_config
+
+    - name: print running config post check
+      debug:
+        var: post_config
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_post
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template_2.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+
+
+    - name: show the differnce between files
+      copy:
+          src: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+          dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+      check_mode: yes
+      diff: yes
+      register: diff
+    - name: print running config post check
+      debug:
+        msg: "{{ diff }}"
+
+
+---
+- hosts: localhost
+  tasks:
+    - name: Get Ansible Date
+      setup:
+        filter: "ansible_date_time"
+        gather_subset: "!all"
+      register: key_date
+    - debug: var=key_date.ansible_facts.ansible_date_time.date
+
+
+    - name: Store DTG as Fact
+      set_fact:
+        DTG: "{{ ansible_date_time }}"
+      register: DTG
+    - debug:
+        msg: "{{ ansible_date_time }}"
+
+    - name: craete variable for DTG
+      set_fact: datetime={{ DTG.ansible_facts.DTG.time +'_'+ DTG.ansible_facts.DTG.date +'_'}}
+    - debug: var=datetime
+
+
+- name: Running config pre check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check before power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+      register: pre_config
+
+    - name: print running config pre check
+      debug:
+        msg: "{{ pre_config }}"
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_pre
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+
+    - name: power down the device and pause for 60 sec
+      pause:
+        minutes: 1
+
+- name: Running config post check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check after power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+
+      register: post_config
+
+    - name: print running config post check
+      debug:
+        var: post_config
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_post
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template_2.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+
+
+    - name: show the differnce between files
+      copy:
+          src: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+          dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+      check_mode: yes
+      diff: yes
+      register: diff
+    - name: print running config post check
+      debug:
+        msg: "{{ diff }}"
+
+
+---
+- hosts: localhost
+  tasks:
+    - name: Get Ansible Date
+      setup:
+        filter: "ansible_date_time"
+        gather_subset: "!all"
+      register: key_date
+    - debug: var=key_date.ansible_facts.ansible_date_time.date
+
+
+    - name: Store DTG as Fact
+      set_fact:
+        DTG: "{{ ansible_date_time }}"
+      register: DTG
+    - debug:
+        msg: "{{ ansible_date_time }}"
+
+    - name: craete variable for DTG
+      set_fact: datetime={{ DTG.ansible_facts.DTG.time +'_'+ DTG.ansible_facts.DTG.date +'_'}}
+    - debug: var=datetime
+
+
+- name: Running config pre check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check before power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+      register: pre_config
+
+    - name: print running config pre check
+      debug:
+        msg: "{{ pre_config }}"
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_pre
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+
+    - name: power down the device and pause for 60 sec
+      pause:
+        minutes: 1
+
+- name: Running config post check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check after power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+
+      register: post_config
+
+    - name: print running config post check
+      debug:
+        var: post_config
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_post
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template_2.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+
+
+    - name: show the differnce between files
+      copy:
+          src: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+          dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+      check_mode: yes
+      diff: yes
+      register: diff
+    - name: print running config post check
+      debug:
+        msg: "{{ diff }}"
+
+
+---
+- hosts: localhost
+  tasks:
+    - name: Get Ansible Date
+      setup:
+        filter: "ansible_date_time"
+        gather_subset: "!all"
+      register: key_date
+    - debug: var=key_date.ansible_facts.ansible_date_time.date
+
+
+    - name: Store DTG as Fact
+      set_fact:
+        DTG: "{{ ansible_date_time }}"
+      register: DTG
+    - debug:
+        msg: "{{ ansible_date_time }}"
+
+    - name: craete variable for DTG
+      set_fact: datetime={{ DTG.ansible_facts.DTG.time +'_'+ DTG.ansible_facts.DTG.date +'_'}}
+    - debug: var=datetime
+
+
+- name: Running config pre check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check before power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+      register: pre_config
+
+    - name: print running config pre check
+      debug:
+        msg: "{{ pre_config }}"
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_pre
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+
+    - name: power down the device and pause for 60 sec
+      pause:
+        minutes: 1
+
+- name: Running config post check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check after power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+
+      register: post_config
+
+    - name: print running config post check
+      debug:
+        var: post_config
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_post
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template_2.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+
+
+    - name: show the differnce between files
+      copy:
+          src: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+          dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+      check_mode: yes
+      diff: yes
+      register: diff
+    - name: print running config post check
+      debug:
+        msg: "{{ diff }}"
+
+
+---
+- hosts: localhost
+  tasks:
+    - name: Get Ansible Date
+      setup:
+        filter: "ansible_date_time"
+        gather_subset: "!all"
+      register: key_date
+    - debug: var=key_date.ansible_facts.ansible_date_time.date
+
+
+    - name: Store DTG as Fact
+      set_fact:
+        DTG: "{{ ansible_date_time }}"
+      register: DTG
+    - debug:
+        msg: "{{ ansible_date_time }}"
+
+    - name: craete variable for DTG
+      set_fact: datetime={{ DTG.ansible_facts.DTG.time +'_'+ DTG.ansible_facts.DTG.date +'_'}}
+    - debug: var=datetime
+
+
+- name: Running config pre check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check before power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+      register: pre_config
+
+    - name: print running config pre check
+      debug:
+        msg: "{{ pre_config }}"
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_pre
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+
+    - name: power down the device and pause for 60 sec
+      pause:
+        minutes: 1
+
+- name: Running config post check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check after power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+
+      register: post_config
+
+    - name: print running config post check
+      debug:
+        var: post_config
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_post
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template_2.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+
+
+    - name: show the differnce between files
+      copy:
+          src: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+          dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+      check_mode: yes
+      diff: yes
+      register: diff
+    - name: print running config post check
+      debug:
+        msg: "{{ diff }}"
+
+
+---
+- hosts: localhost
+  tasks:
+    - name: Get Ansible Date
+      setup:
+        filter: "ansible_date_time"
+        gather_subset: "!all"
+      register: key_date
+    - debug: var=key_date.ansible_facts.ansible_date_time.date
+
+
+    - name: Store DTG as Fact
+      set_fact:
+        DTG: "{{ ansible_date_time }}"
+      register: DTG
+    - debug:
+        msg: "{{ ansible_date_time }}"
+
+    - name: craete variable for DTG
+      set_fact: datetime={{ DTG.ansible_facts.DTG.time +'_'+ DTG.ansible_facts.DTG.date +'_'}}
+    - debug: var=datetime
+
+
+- name: Running config pre check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check before power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+      register: pre_config
+
+    - name: print running config pre check
+      debug:
+        msg: "{{ pre_config }}"
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_pre
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+
+    - name: power down the device and pause for 60 sec
+      pause:
+        minutes: 1
+
+- name: Running config post check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check after power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+
+      register: post_config
+
+    - name: print running config post check
+      debug:
+        var: post_config
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_post
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template_2.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+
+
+    - name: show the differnce between files
+      copy:
+          src: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+          dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+      check_mode: yes
+      diff: yes
+      register: diff
+    - name: print running config post check
+      debug:
+        msg: "{{ diff }}"
+
+
+---
+- hosts: localhost
+  tasks:
+    - name: Get Ansible Date
+      setup:
+        filter: "ansible_date_time"
+        gather_subset: "!all"
+      register: key_date
+    - debug: var=key_date.ansible_facts.ansible_date_time.date
+
+
+    - name: Store DTG as Fact
+      set_fact:
+        DTG: "{{ ansible_date_time }}"
+      register: DTG
+    - debug:
+        msg: "{{ ansible_date_time }}"
+
+    - name: craete variable for DTG
+      set_fact: datetime={{ DTG.ansible_facts.DTG.time +'_'+ DTG.ansible_facts.DTG.date +'_'}}
+    - debug: var=datetime
+
+
+- name: Running config pre check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check before power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+      register: pre_config
+
+    - name: print running config pre check
+      debug:
+        msg: "{{ pre_config }}"
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_pre
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+
+    - name: power down the device and pause for 60 sec
+      pause:
+        minutes: 1
+
+- name: Running config post check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check after power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+
+      register: post_config
+
+    - name: print running config post check
+      debug:
+        var: post_config
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_post
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template_2.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+
+
+    - name: show the differnce between files
+      copy:
+          src: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+          dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+      check_mode: yes
+      diff: yes
+      register: diff
+    - name: print running config post check
+      debug:
+        msg: "{{ diff }}"
+
+
+---
+- hosts: localhost
+  tasks:
+    - name: Get Ansible Date
+      setup:
+        filter: "ansible_date_time"
+        gather_subset: "!all"
+      register: key_date
+    - debug: var=key_date.ansible_facts.ansible_date_time.date
+
+
+    - name: Store DTG as Fact
+      set_fact:
+        DTG: "{{ ansible_date_time }}"
+      register: DTG
+    - debug:
+        msg: "{{ ansible_date_time }}"
+
+    - name: craete variable for DTG
+      set_fact: datetime={{ DTG.ansible_facts.DTG.time +'_'+ DTG.ansible_facts.DTG.date +'_'}}
+    - debug: var=datetime
+
+
+- name: Running config pre check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check before power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+      register: pre_config
+
+    - name: print running config pre check
+      debug:
+        msg: "{{ pre_config }}"
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_pre
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+
+    - name: power down the device and pause for 60 sec
+      pause:
+        minutes: 1
+
+- name: Running config post check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check after power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+
+      register: post_config
+
+    - name: print running config post check
+      debug:
+        var: post_config
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_post
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template_2.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+
+
+    - name: show the differnce between files
+      copy:
+          src: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+          dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+      check_mode: yes
+      diff: yes
+      register: diff
+    - name: print running config post check
+      debug:
+        msg: "{{ diff }}"
+
+
+---
+- hosts: localhost
+  tasks:
+    - name: Get Ansible Date
+      setup:
+        filter: "ansible_date_time"
+        gather_subset: "!all"
+      register: key_date
+    - debug: var=key_date.ansible_facts.ansible_date_time.date
+
+
+    - name: Store DTG as Fact
+      set_fact:
+        DTG: "{{ ansible_date_time }}"
+      register: DTG
+    - debug:
+        msg: "{{ ansible_date_time }}"
+
+    - name: craete variable for DTG
+      set_fact: datetime={{ DTG.ansible_facts.DTG.time +'_'+ DTG.ansible_facts.DTG.date +'_'}}
+    - debug: var=datetime
+
+
+- name: Running config pre check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check before power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+      register: pre_config
+
+    - name: print running config pre check
+      debug:
+        msg: "{{ pre_config }}"
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_pre
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+
+    - name: power down the device and pause for 60 sec
+      pause:
+        minutes: 1
+
+- name: Running config post check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check after power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+
+      register: post_config
+
+    - name: print running config post check
+      debug:
+        var: post_config
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_post
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template_2.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+
+
+    - name: show the differnce between files
+      copy:
+          src: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+          dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+      check_mode: yes
+      diff: yes
+      register: diff
+    - name: print running config post check
+      debug:
+        msg: "{{ diff }}"
+
+
+---
+- hosts: localhost
+  tasks:
+    - name: Get Ansible Date
+      setup:
+        filter: "ansible_date_time"
+        gather_subset: "!all"
+      register: key_date
+    - debug: var=key_date.ansible_facts.ansible_date_time.date
+
+
+    - name: Store DTG as Fact
+      set_fact:
+        DTG: "{{ ansible_date_time }}"
+      register: DTG
+    - debug:
+        msg: "{{ ansible_date_time }}"
+
+    - name: craete variable for DTG
+      set_fact: datetime={{ DTG.ansible_facts.DTG.time +'_'+ DTG.ansible_facts.DTG.date +'_'}}
+    - debug: var=datetime
+
+
+- name: Running config pre check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check before power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+      register: pre_config
+
+    - name: print running config pre check
+      debug:
+        msg: "{{ pre_config }}"
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_pre
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+
+    - name: power down the device and pause for 60 sec
+      pause:
+        minutes: 1
+
+- name: Running config post check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check after power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+
+      register: post_config
+
+    - name: print running config post check
+      debug:
+        var: post_config
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_post
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template_2.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+
+
+    - name: show the differnce between files
+      copy:
+          src: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+          dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+      check_mode: yes
+      diff: yes
+      register: diff
+    - name: print running config post check
+      debug:
+        msg: "{{ diff }}"
+
+
+---
+- hosts: localhost
+  tasks:
+    - name: Get Ansible Date
+      setup:
+        filter: "ansible_date_time"
+        gather_subset: "!all"
+      register: key_date
+    - debug: var=key_date.ansible_facts.ansible_date_time.date
+
+
+    - name: Store DTG as Fact
+      set_fact:
+        DTG: "{{ ansible_date_time }}"
+      register: DTG
+    - debug:
+        msg: "{{ ansible_date_time }}"
+
+    - name: craete variable for DTG
+      set_fact: datetime={{ DTG.ansible_facts.DTG.time +'_'+ DTG.ansible_facts.DTG.date +'_'}}
+    - debug: var=datetime
+
+
+- name: Running config pre check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check before power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+      register: pre_config
+
+    - name: print running config pre check
+      debug:
+        msg: "{{ pre_config }}"
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_pre
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+
+    - name: power down the device and pause for 60 sec
+      pause:
+        minutes: 1
+
+- name: Running config post check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check after power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+
+      register: post_config
+
+    - name: print running config post check
+      debug:
+        var: post_config
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_post
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template_2.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+
+
+    - name: show the differnce between files
+      copy:
+          src: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+          dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+      check_mode: yes
+      diff: yes
+      register: diff
+    - name: print running config post check
+      debug:
+        msg: "{{ diff }}"
+
+
+---
+- hosts: localhost
+  tasks:
+    - name: Get Ansible Date
+      setup:
+        filter: "ansible_date_time"
+        gather_subset: "!all"
+      register: key_date
+    - debug: var=key_date.ansible_facts.ansible_date_time.date
+
+
+    - name: Store DTG as Fact
+      set_fact:
+        DTG: "{{ ansible_date_time }}"
+      register: DTG
+    - debug:
+        msg: "{{ ansible_date_time }}"
+
+    - name: craete variable for DTG
+      set_fact: datetime={{ DTG.ansible_facts.DTG.time +'_'+ DTG.ansible_facts.DTG.date +'_'}}
+    - debug: var=datetime
+
+
+- name: Running config pre check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check before power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+      register: pre_config
+
+    - name: print running config pre check
+      debug:
+        msg: "{{ pre_config }}"
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_pre
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+
+    - name: power down the device and pause for 60 sec
+      pause:
+        minutes: 1
+
+- name: Running config post check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check after power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+
+      register: post_config
+
+    - name: print running config post check
+      debug:
+        var: post_config
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_post
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template_2.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+
+
+    - name: show the differnce between files
+      copy:
+          src: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+          dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+      check_mode: yes
+      diff: yes
+      register: diff
+    - name: print running config post check
+      debug:
+        msg: "{{ diff }}"
+
+
+---
+- hosts: localhost
+  tasks:
+    - name: Get Ansible Date
+      setup:
+        filter: "ansible_date_time"
+        gather_subset: "!all"
+      register: key_date
+    - debug: var=key_date.ansible_facts.ansible_date_time.date
+
+
+    - name: Store DTG as Fact
+      set_fact:
+        DTG: "{{ ansible_date_time }}"
+      register: DTG
+    - debug:
+        msg: "{{ ansible_date_time }}"
+
+    - name: craete variable for DTG
+      set_fact: datetime={{ DTG.ansible_facts.DTG.time +'_'+ DTG.ansible_facts.DTG.date +'_'}}
+    - debug: var=datetime
+
+
+- name: Running config pre check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check before power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+      register: pre_config
+
+    - name: print running config pre check
+      debug:
+        msg: "{{ pre_config }}"
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_pre
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+
+    - name: power down the device and pause for 60 sec
+      pause:
+        minutes: 1
+
+- name: Running config post check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check after power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+
+      register: post_config
+
+    - name: print running config post check
+      debug:
+        var: post_config
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_post
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template_2.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+
+
+    - name: show the differnce between files
+      copy:
+          src: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+          dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+      check_mode: yes
+      diff: yes
+      register: diff
+    - name: print running config post check
+      debug:
+        msg: "{{ diff }}"
+
+
+---
+- hosts: localhost
+  tasks:
+    - name: Get Ansible Date
+      setup:
+        filter: "ansible_date_time"
+        gather_subset: "!all"
+      register: key_date
+    - debug: var=key_date.ansible_facts.ansible_date_time.date
+
+
+    - name: Store DTG as Fact
+      set_fact:
+        DTG: "{{ ansible_date_time }}"
+      register: DTG
+    - debug:
+        msg: "{{ ansible_date_time }}"
+
+    - name: craete variable for DTG
+      set_fact: datetime={{ DTG.ansible_facts.DTG.time +'_'+ DTG.ansible_facts.DTG.date +'_'}}
+    - debug: var=datetime
+
+
+- name: Running config pre check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check before power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+      register: pre_config
+
+    - name: print running config pre check
+      debug:
+        msg: "{{ pre_config }}"
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_pre
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+
+    - name: power down the device and pause for 60 sec
+      pause:
+        minutes: 1
+
+- name: Running config post check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check after power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+
+      register: post_config
+
+    - name: print running config post check
+      debug:
+        var: post_config
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_post
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template_2.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+
+
+    - name: show the differnce between files
+      copy:
+          src: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+          dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+      check_mode: yes
+      diff: yes
+      register: diff
+    - name: print running config post check
+      debug:
+        msg: "{{ diff }}"
+
+
+---
+- hosts: localhost
+  tasks:
+    - name: Get Ansible Date
+      setup:
+        filter: "ansible_date_time"
+        gather_subset: "!all"
+      register: key_date
+    - debug: var=key_date.ansible_facts.ansible_date_time.date
+
+
+    - name: Store DTG as Fact
+      set_fact:
+        DTG: "{{ ansible_date_time }}"
+      register: DTG
+    - debug:
+        msg: "{{ ansible_date_time }}"
+
+    - name: craete variable for DTG
+      set_fact: datetime={{ DTG.ansible_facts.DTG.time +'_'+ DTG.ansible_facts.DTG.date +'_'}}
+    - debug: var=datetime
+
+
+- name: Running config pre check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check before power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+      register: pre_config
+
+    - name: print running config pre check
+      debug:
+        msg: "{{ pre_config }}"
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_pre
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+
+    - name: power down the device and pause for 60 sec
+      pause:
+        minutes: 1
+
+- name: Running config post check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check after power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+
+      register: post_config
+
+    - name: print running config post check
+      debug:
+        var: post_config
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_post
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template_2.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+
+
+    - name: show the differnce between files
+      copy:
+          src: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+          dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+      check_mode: yes
+      diff: yes
+      register: diff
+    - name: print running config post check
+      debug:
+        msg: "{{ diff }}"
+
+
+---
+- hosts: localhost
+  tasks:
+    - name: Get Ansible Date
+      setup:
+        filter: "ansible_date_time"
+        gather_subset: "!all"
+      register: key_date
+    - debug: var=key_date.ansible_facts.ansible_date_time.date
+
+
+    - name: Store DTG as Fact
+      set_fact:
+        DTG: "{{ ansible_date_time }}"
+      register: DTG
+    - debug:
+        msg: "{{ ansible_date_time }}"
+
+    - name: craete variable for DTG
+      set_fact: datetime={{ DTG.ansible_facts.DTG.time +'_'+ DTG.ansible_facts.DTG.date +'_'}}
+    - debug: var=datetime
+
+
+- name: Running config pre check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check before power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+      register: pre_config
+
+    - name: print running config pre check
+      debug:
+        msg: "{{ pre_config }}"
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_pre
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+
+    - name: power down the device and pause for 60 sec
+      pause:
+        minutes: 1
+
+- name: Running config post check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check after power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+
+      register: post_config
+
+    - name: print running config post check
+      debug:
+        var: post_config
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_post
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template_2.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+
+
+    - name: show the differnce between files
+      copy:
+          src: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+          dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+      check_mode: yes
+      diff: yes
+      register: diff
+    - name: print running config post check
+      debug:
+        msg: "{{ diff }}"
+
+
+---
+- hosts: localhost
+  tasks:
+    - name: Get Ansible Date
+      setup:
+        filter: "ansible_date_time"
+        gather_subset: "!all"
+      register: key_date
+    - debug: var=key_date.ansible_facts.ansible_date_time.date
+
+
+    - name: Store DTG as Fact
+      set_fact:
+        DTG: "{{ ansible_date_time }}"
+      register: DTG
+    - debug:
+        msg: "{{ ansible_date_time }}"
+
+    - name: craete variable for DTG
+      set_fact: datetime={{ DTG.ansible_facts.DTG.time +'_'+ DTG.ansible_facts.DTG.date +'_'}}
+    - debug: var=datetime
+
+
+- name: Running config pre check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check before power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+      register: pre_config
+
+    - name: print running config pre check
+      debug:
+        msg: "{{ pre_config }}"
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_pre
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+
+    - name: power down the device and pause for 60 sec
+      pause:
+        minutes: 1
+
+- name: Running config post check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check after power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+
+      register: post_config
+
+    - name: print running config post check
+      debug:
+        var: post_config
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_post
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template_2.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+
+
+    - name: show the differnce between files
+      copy:
+          src: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+          dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+      check_mode: yes
+      diff: yes
+      register: diff
+    - name: print running config post check
+      debug:
+        msg: "{{ diff }}"
+
+
+---
+- hosts: localhost
+  tasks:
+    - name: Get Ansible Date
+      setup:
+        filter: "ansible_date_time"
+        gather_subset: "!all"
+      register: key_date
+    - debug: var=key_date.ansible_facts.ansible_date_time.date
+
+
+    - name: Store DTG as Fact
+      set_fact:
+        DTG: "{{ ansible_date_time }}"
+      register: DTG
+    - debug:
+        msg: "{{ ansible_date_time }}"
+
+    - name: craete variable for DTG
+      set_fact: datetime={{ DTG.ansible_facts.DTG.time +'_'+ DTG.ansible_facts.DTG.date +'_'}}
+    - debug: var=datetime
+
+
+- name: Running config pre check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check before power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+      register: pre_config
+
+    - name: print running config pre check
+      debug:
+        msg: "{{ pre_config }}"
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_pre
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+
+    - name: power down the device and pause for 60 sec
+      pause:
+        minutes: 1
+
+- name: Running config post check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check after power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+
+      register: post_config
+
+    - name: print running config post check
+      debug:
+        var: post_config
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_post
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template_2.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+
+
+    - name: show the differnce between files
+      copy:
+          src: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+          dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+      check_mode: yes
+      diff: yes
+      register: diff
+    - name: print running config post check
+      debug:
+        msg: "{{ diff }}"
+
+
+---
+- hosts: localhost
+  tasks:
+    - name: Get Ansible Date
+      setup:
+        filter: "ansible_date_time"
+        gather_subset: "!all"
+      register: key_date
+    - debug: var=key_date.ansible_facts.ansible_date_time.date
+
+
+    - name: Store DTG as Fact
+      set_fact:
+        DTG: "{{ ansible_date_time }}"
+      register: DTG
+    - debug:
+        msg: "{{ ansible_date_time }}"
+
+    - name: craete variable for DTG
+      set_fact: datetime={{ DTG.ansible_facts.DTG.time +'_'+ DTG.ansible_facts.DTG.date +'_'}}
+    - debug: var=datetime
+
+
+- name: Running config pre check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check before power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+      register: pre_config
+
+    - name: print running config pre check
+      debug:
+        msg: "{{ pre_config }}"
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_pre
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+
+    - name: power down the device and pause for 60 sec
+      pause:
+        minutes: 1
+
+- name: Running config post check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check after power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+
+      register: post_config
+
+    - name: print running config post check
+      debug:
+        var: post_config
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_post
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template_2.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+
+
+    - name: show the differnce between files
+      copy:
+          src: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+          dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+      check_mode: yes
+      diff: yes
+      register: diff
+    - name: print running config post check
+      debug:
+        msg: "{{ diff }}"
+
+
+---
+- hosts: localhost
+  tasks:
+    - name: Get Ansible Date
+      setup:
+        filter: "ansible_date_time"
+        gather_subset: "!all"
+      register: key_date
+    - debug: var=key_date.ansible_facts.ansible_date_time.date
+
+
+    - name: Store DTG as Fact
+      set_fact:
+        DTG: "{{ ansible_date_time }}"
+      register: DTG
+    - debug:
+        msg: "{{ ansible_date_time }}"
+
+    - name: craete variable for DTG
+      set_fact: datetime={{ DTG.ansible_facts.DTG.time +'_'+ DTG.ansible_facts.DTG.date +'_'}}
+    - debug: var=datetime
+
+
+- name: Running config pre check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check before power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+      register: pre_config
+
+    - name: print running config pre check
+      debug:
+        msg: "{{ pre_config }}"
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_pre
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+
+    - name: power down the device and pause for 60 sec
+      pause:
+        minutes: 1
+
+- name: Running config post check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check after power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+
+      register: post_config
+
+    - name: print running config post check
+      debug:
+        var: post_config
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_post
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template_2.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+
+
+    - name: show the differnce between files
+      copy:
+          src: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+          dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+      check_mode: yes
+      diff: yes
+      register: diff
+    - name: print running config post check
+      debug:
+        msg: "{{ diff }}"
+
+
+---
+- hosts: localhost
+  tasks:
+    - name: Get Ansible Date
+      setup:
+        filter: "ansible_date_time"
+        gather_subset: "!all"
+      register: key_date
+    - debug: var=key_date.ansible_facts.ansible_date_time.date
+
+
+    - name: Store DTG as Fact
+      set_fact:
+        DTG: "{{ ansible_date_time }}"
+      register: DTG
+    - debug:
+        msg: "{{ ansible_date_time }}"
+
+    - name: craete variable for DTG
+      set_fact: datetime={{ DTG.ansible_facts.DTG.time +'_'+ DTG.ansible_facts.DTG.date +'_'}}
+    - debug: var=datetime
+
+
+- name: Running config pre check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check before power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+      register: pre_config
+
+    - name: print running config pre check
+      debug:
+        msg: "{{ pre_config }}"
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_pre
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+
+    - name: power down the device and pause for 60 sec
+      pause:
+        minutes: 1
+
+- name: Running config post check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check after power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+
+      register: post_config
+
+    - name: print running config post check
+      debug:
+        var: post_config
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_post
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template_2.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+
+
+    - name: show the differnce between files
+      copy:
+          src: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+          dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+      check_mode: yes
+      diff: yes
+      register: diff
+    - name: print running config post check
+      debug:
+        msg: "{{ diff }}"
+
+
+---
+- hosts: localhost
+  tasks:
+    - name: Get Ansible Date
+      setup:
+        filter: "ansible_date_time"
+        gather_subset: "!all"
+      register: key_date
+    - debug: var=key_date.ansible_facts.ansible_date_time.date
+
+
+    - name: Store DTG as Fact
+      set_fact:
+        DTG: "{{ ansible_date_time }}"
+      register: DTG
+    - debug:
+        msg: "{{ ansible_date_time }}"
+
+    - name: craete variable for DTG
+      set_fact: datetime={{ DTG.ansible_facts.DTG.time +'_'+ DTG.ansible_facts.DTG.date +'_'}}
+    - debug: var=datetime
+
+
+- name: Running config pre check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check before power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+      register: pre_config
+
+    - name: print running config pre check
+      debug:
+        msg: "{{ pre_config }}"
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_pre
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+
+    - name: power down the device and pause for 60 sec
+      pause:
+        minutes: 1
+
+- name: Running config post check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check after power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+
+      register: post_config
+
+    - name: print running config post check
+      debug:
+        var: post_config
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_post
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template_2.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+
+
+    - name: show the differnce between files
+      copy:
+          src: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+          dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+      check_mode: yes
+      diff: yes
+      register: diff
+    - name: print running config post check
+      debug:
+        msg: "{{ diff }}"
+
+
+---
+- hosts: localhost
+  tasks:
+    - name: Get Ansible Date
+      setup:
+        filter: "ansible_date_time"
+        gather_subset: "!all"
+      register: key_date
+    - debug: var=key_date.ansible_facts.ansible_date_time.date
+
+
+    - name: Store DTG as Fact
+      set_fact:
+        DTG: "{{ ansible_date_time }}"
+      register: DTG
+    - debug:
+        msg: "{{ ansible_date_time }}"
+
+    - name: craete variable for DTG
+      set_fact: datetime={{ DTG.ansible_facts.DTG.time +'_'+ DTG.ansible_facts.DTG.date +'_'}}
+    - debug: var=datetime
+
+
+- name: Running config pre check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check before power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+      register: pre_config
+
+    - name: print running config pre check
+      debug:
+        msg: "{{ pre_config }}"
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_pre
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+
+    - name: power down the device and pause for 60 sec
+      pause:
+        minutes: 1
+
+- name: Running config post check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check after power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+
+      register: post_config
+
+    - name: print running config post check
+      debug:
+        var: post_config
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_post
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template_2.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+
+
+    - name: show the differnce between files
+      copy:
+          src: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+          dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+      check_mode: yes
+      diff: yes
+      register: diff
+    - name: print running config post check
+      debug:
+        msg: "{{ diff }}"
+
+
+---
+- hosts: localhost
+  tasks:
+    - name: Get Ansible Date
+      setup:
+        filter: "ansible_date_time"
+        gather_subset: "!all"
+      register: key_date
+    - debug: var=key_date.ansible_facts.ansible_date_time.date
+
+
+    - name: Store DTG as Fact
+      set_fact:
+        DTG: "{{ ansible_date_time }}"
+      register: DTG
+    - debug:
+        msg: "{{ ansible_date_time }}"
+
+    - name: craete variable for DTG
+      set_fact: datetime={{ DTG.ansible_facts.DTG.time +'_'+ DTG.ansible_facts.DTG.date +'_'}}
+    - debug: var=datetime
+
+
+- name: Running config pre check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check before power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+      register: pre_config
+
+    - name: print running config pre check
+      debug:
+        msg: "{{ pre_config }}"
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_pre
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+
+    - name: power down the device and pause for 60 sec
+      pause:
+        minutes: 1
+
+- name: Running config post check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check after power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+
+      register: post_config
+
+    - name: print running config post check
+      debug:
+        var: post_config
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_post
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template_2.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+
+
+    - name: show the differnce between files
+      copy:
+          src: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+          dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+      check_mode: yes
+      diff: yes
+      register: diff
+    - name: print running config post check
+      debug:
+        msg: "{{ diff }}"
+
+
+---
+- hosts: localhost
+  tasks:
+    - name: Get Ansible Date
+      setup:
+        filter: "ansible_date_time"
+        gather_subset: "!all"
+      register: key_date
+    - debug: var=key_date.ansible_facts.ansible_date_time.date
+
+
+    - name: Store DTG as Fact
+      set_fact:
+        DTG: "{{ ansible_date_time }}"
+      register: DTG
+    - debug:
+        msg: "{{ ansible_date_time }}"
+
+    - name: craete variable for DTG
+      set_fact: datetime={{ DTG.ansible_facts.DTG.time +'_'+ DTG.ansible_facts.DTG.date +'_'}}
+    - debug: var=datetime
+
+
+- name: Running config pre check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check before power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+      register: pre_config
+
+    - name: print running config pre check
+      debug:
+        msg: "{{ pre_config }}"
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_pre
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+
+    - name: power down the device and pause for 60 sec
+      pause:
+        minutes: 1
+
+- name: Running config post check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check after power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+
+      register: post_config
+
+    - name: print running config post check
+      debug:
+        var: post_config
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_post
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template_2.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+
+
+    - name: show the differnce between files
+      copy:
+          src: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+          dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+      check_mode: yes
+      diff: yes
+      register: diff
+    - name: print running config post check
+      debug:
+        msg: "{{ diff }}"
+
+
+---
+- hosts: localhost
+  tasks:
+    - name: Get Ansible Date
+      setup:
+        filter: "ansible_date_time"
+        gather_subset: "!all"
+      register: key_date
+    - debug: var=key_date.ansible_facts.ansible_date_time.date
+
+
+    - name: Store DTG as Fact
+      set_fact:
+        DTG: "{{ ansible_date_time }}"
+      register: DTG
+    - debug:
+        msg: "{{ ansible_date_time }}"
+
+    - name: craete variable for DTG
+      set_fact: datetime={{ DTG.ansible_facts.DTG.time +'_'+ DTG.ansible_facts.DTG.date +'_'}}
+    - debug: var=datetime
+
+
+- name: Running config pre check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check before power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+      register: pre_config
+
+    - name: print running config pre check
+      debug:
+        msg: "{{ pre_config }}"
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_pre
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+
+    - name: power down the device and pause for 60 sec
+      pause:
+        minutes: 1
+
+- name: Running config post check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check after power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+
+      register: post_config
+
+    - name: print running config post check
+      debug:
+        var: post_config
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_post
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template_2.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+
+
+    - name: show the differnce between files
+      copy:
+          src: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+          dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+      check_mode: yes
+      diff: yes
+      register: diff
+    - name: print running config post check
+      debug:
+        msg: "{{ diff }}"
+
+
+---
+- hosts: localhost
+  tasks:
+    - name: Get Ansible Date
+      setup:
+        filter: "ansible_date_time"
+        gather_subset: "!all"
+      register: key_date
+    - debug: var=key_date.ansible_facts.ansible_date_time.date
+
+
+    - name: Store DTG as Fact
+      set_fact:
+        DTG: "{{ ansible_date_time }}"
+      register: DTG
+    - debug:
+        msg: "{{ ansible_date_time }}"
+
+    - name: craete variable for DTG
+      set_fact: datetime={{ DTG.ansible_facts.DTG.time +'_'+ DTG.ansible_facts.DTG.date +'_'}}
+    - debug: var=datetime
+
+
+- name: Running config pre check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check before power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+      register: pre_config
+
+    - name: print running config pre check
+      debug:
+        msg: "{{ pre_config }}"
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_pre
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+
+    - name: power down the device and pause for 60 sec
+      pause:
+        minutes: 1
+
+- name: Running config post check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check after power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+
+      register: post_config
+
+    - name: print running config post check
+      debug:
+        var: post_config
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_post
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template_2.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+
+
+    - name: show the differnce between files
+      copy:
+          src: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+          dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+      check_mode: yes
+      diff: yes
+      register: diff
+    - name: print running config post check
+      debug:
+        msg: "{{ diff }}"
+
+
+---
+- hosts: localhost
+  tasks:
+    - name: Get Ansible Date
+      setup:
+        filter: "ansible_date_time"
+        gather_subset: "!all"
+      register: key_date
+    - debug: var=key_date.ansible_facts.ansible_date_time.date
+
+
+    - name: Store DTG as Fact
+      set_fact:
+        DTG: "{{ ansible_date_time }}"
+      register: DTG
+    - debug:
+        msg: "{{ ansible_date_time }}"
+
+    - name: craete variable for DTG
+      set_fact: datetime={{ DTG.ansible_facts.DTG.time +'_'+ DTG.ansible_facts.DTG.date +'_'}}
+    - debug: var=datetime
+
+
+- name: Running config pre check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check before power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+      register: pre_config
+
+    - name: print running config pre check
+      debug:
+        msg: "{{ pre_config }}"
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_pre
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+
+    - name: power down the device and pause for 60 sec
+      pause:
+        minutes: 1
+
+- name: Running config post check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check after power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+
+      register: post_config
+
+    - name: print running config post check
+      debug:
+        var: post_config
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_post
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template_2.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+
+
+    - name: show the differnce between files
+      copy:
+          src: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+          dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+      check_mode: yes
+      diff: yes
+      register: diff
+    - name: print running config post check
+      debug:
+        msg: "{{ diff }}"
+
+
+---
+- hosts: localhost
+  tasks:
+    - name: Get Ansible Date
+      setup:
+        filter: "ansible_date_time"
+        gather_subset: "!all"
+      register: key_date
+    - debug: var=key_date.ansible_facts.ansible_date_time.date
+
+
+    - name: Store DTG as Fact
+      set_fact:
+        DTG: "{{ ansible_date_time }}"
+      register: DTG
+    - debug:
+        msg: "{{ ansible_date_time }}"
+
+    - name: craete variable for DTG
+      set_fact: datetime={{ DTG.ansible_facts.DTG.time +'_'+ DTG.ansible_facts.DTG.date +'_'}}
+    - debug: var=datetime
+
+
+- name: Running config pre check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check before power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+      register: pre_config
+
+    - name: print running config pre check
+      debug:
+        msg: "{{ pre_config }}"
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_pre
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+
+    - name: power down the device and pause for 60 sec
+      pause:
+        minutes: 1
+
+- name: Running config post check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check after power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+
+      register: post_config
+
+    - name: print running config post check
+      debug:
+        var: post_config
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_post
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template_2.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+
+
+    - name: show the differnce between files
+      copy:
+          src: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+          dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+      check_mode: yes
+      diff: yes
+      register: diff
+    - name: print running config post check
+      debug:
+        msg: "{{ diff }}"
+
+
+---
+- hosts: localhost
+  tasks:
+    - name: Get Ansible Date
+      setup:
+        filter: "ansible_date_time"
+        gather_subset: "!all"
+      register: key_date
+    - debug: var=key_date.ansible_facts.ansible_date_time.date
+
+
+    - name: Store DTG as Fact
+      set_fact:
+        DTG: "{{ ansible_date_time }}"
+      register: DTG
+    - debug:
+        msg: "{{ ansible_date_time }}"
+
+    - name: craete variable for DTG
+      set_fact: datetime={{ DTG.ansible_facts.DTG.time +'_'+ DTG.ansible_facts.DTG.date +'_'}}
+    - debug: var=datetime
+
+
+- name: Running config pre check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check before power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+      register: pre_config
+
+    - name: print running config pre check
+      debug:
+        msg: "{{ pre_config }}"
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_pre
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+
+    - name: power down the device and pause for 60 sec
+      pause:
+        minutes: 1
+
+- name: Running config post check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check after power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+
+      register: post_config
+
+    - name: print running config post check
+      debug:
+        var: post_config
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_post
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template_2.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+
+
+    - name: show the differnce between files
+      copy:
+          src: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+          dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+      check_mode: yes
+      diff: yes
+      register: diff
+    - name: print running config post check
+      debug:
+        msg: "{{ diff }}"
+
+
+---
+- hosts: localhost
+  tasks:
+    - name: Get Ansible Date
+      setup:
+        filter: "ansible_date_time"
+        gather_subset: "!all"
+      register: key_date
+    - debug: var=key_date.ansible_facts.ansible_date_time.date
+
+
+    - name: Store DTG as Fact
+      set_fact:
+        DTG: "{{ ansible_date_time }}"
+      register: DTG
+    - debug:
+        msg: "{{ ansible_date_time }}"
+
+    - name: craete variable for DTG
+      set_fact: datetime={{ DTG.ansible_facts.DTG.time +'_'+ DTG.ansible_facts.DTG.date +'_'}}
+    - debug: var=datetime
+
+
+- name: Running config pre check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check before power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+      register: pre_config
+
+    - name: print running config pre check
+      debug:
+        msg: "{{ pre_config }}"
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_pre
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+
+    - name: power down the device and pause for 60 sec
+      pause:
+        minutes: 1
+
+- name: Running config post check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check after power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+
+      register: post_config
+
+    - name: print running config post check
+      debug:
+        var: post_config
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_post
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template_2.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+
+
+    - name: show the differnce between files
+      copy:
+          src: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+          dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+      check_mode: yes
+      diff: yes
+      register: diff
+    - name: print running config post check
+      debug:
+        msg: "{{ diff }}"
+
+
+---
+- hosts: localhost
+  tasks:
+    - name: Get Ansible Date
+      setup:
+        filter: "ansible_date_time"
+        gather_subset: "!all"
+      register: key_date
+    - debug: var=key_date.ansible_facts.ansible_date_time.date
+
+
+    - name: Store DTG as Fact
+      set_fact:
+        DTG: "{{ ansible_date_time }}"
+      register: DTG
+    - debug:
+        msg: "{{ ansible_date_time }}"
+
+    - name: craete variable for DTG
+      set_fact: datetime={{ DTG.ansible_facts.DTG.time +'_'+ DTG.ansible_facts.DTG.date +'_'}}
+    - debug: var=datetime
+
+
+- name: Running config pre check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check before power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+      register: pre_config
+
+    - name: print running config pre check
+      debug:
+        msg: "{{ pre_config }}"
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_pre
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+
+    - name: power down the device and pause for 60 sec
+      pause:
+        minutes: 1
+
+- name: Running config post check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check after power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+
+      register: post_config
+
+    - name: print running config post check
+      debug:
+        var: post_config
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_post
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template_2.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+
+
+    - name: show the differnce between files
+      copy:
+          src: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+          dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+      check_mode: yes
+      diff: yes
+      register: diff
+    - name: print running config post check
+      debug:
+        msg: "{{ diff }}"
+
+
+---
+- hosts: localhost
+  tasks:
+    - name: Get Ansible Date
+      setup:
+        filter: "ansible_date_time"
+        gather_subset: "!all"
+      register: key_date
+    - debug: var=key_date.ansible_facts.ansible_date_time.date
+
+
+    - name: Store DTG as Fact
+      set_fact:
+        DTG: "{{ ansible_date_time }}"
+      register: DTG
+    - debug:
+        msg: "{{ ansible_date_time }}"
+
+    - name: craete variable for DTG
+      set_fact: datetime={{ DTG.ansible_facts.DTG.time +'_'+ DTG.ansible_facts.DTG.date +'_'}}
+    - debug: var=datetime
+
+
+- name: Running config pre check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check before power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+      register: pre_config
+
+    - name: print running config pre check
+      debug:
+        msg: "{{ pre_config }}"
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_pre
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+
+    - name: power down the device and pause for 60 sec
+      pause:
+        minutes: 1
+
+- name: Running config post check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check after power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+
+      register: post_config
+
+    - name: print running config post check
+      debug:
+        var: post_config
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_post
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template_2.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+
+
+    - name: show the differnce between files
+      copy:
+          src: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+          dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+      check_mode: yes
+      diff: yes
+      register: diff
+    - name: print running config post check
+      debug:
+        msg: "{{ diff }}"
+
+
+---
+- hosts: localhost
+  tasks:
+    - name: Get Ansible Date
+      setup:
+        filter: "ansible_date_time"
+        gather_subset: "!all"
+      register: key_date
+    - debug: var=key_date.ansible_facts.ansible_date_time.date
+
+
+    - name: Store DTG as Fact
+      set_fact:
+        DTG: "{{ ansible_date_time }}"
+      register: DTG
+    - debug:
+        msg: "{{ ansible_date_time }}"
+
+    - name: craete variable for DTG
+      set_fact: datetime={{ DTG.ansible_facts.DTG.time +'_'+ DTG.ansible_facts.DTG.date +'_'}}
+    - debug: var=datetime
+
+
+- name: Running config pre check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check before power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+      register: pre_config
+
+    - name: print running config pre check
+      debug:
+        msg: "{{ pre_config }}"
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_pre
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+
+    - name: power down the device and pause for 60 sec
+      pause:
+        minutes: 1
+
+- name: Running config post check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check after power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+
+      register: post_config
+
+    - name: print running config post check
+      debug:
+        var: post_config
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_post
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template_2.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+
+
+    - name: show the differnce between files
+      copy:
+          src: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+          dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+      check_mode: yes
+      diff: yes
+      register: diff
+    - name: print running config post check
+      debug:
+        msg: "{{ diff }}"
+
+
+---
+- hosts: localhost
+  tasks:
+    - name: Get Ansible Date
+      setup:
+        filter: "ansible_date_time"
+        gather_subset: "!all"
+      register: key_date
+    - debug: var=key_date.ansible_facts.ansible_date_time.date
+
+
+    - name: Store DTG as Fact
+      set_fact:
+        DTG: "{{ ansible_date_time }}"
+      register: DTG
+    - debug:
+        msg: "{{ ansible_date_time }}"
+
+    - name: craete variable for DTG
+      set_fact: datetime={{ DTG.ansible_facts.DTG.time +'_'+ DTG.ansible_facts.DTG.date +'_'}}
+    - debug: var=datetime
+
+
+- name: Running config pre check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check before power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+      register: pre_config
+
+    - name: print running config pre check
+      debug:
+        msg: "{{ pre_config }}"
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_pre
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+
+    - name: power down the device and pause for 60 sec
+      pause:
+        minutes: 1
+
+- name: Running config post check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check after power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+
+      register: post_config
+
+    - name: print running config post check
+      debug:
+        var: post_config
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_post
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template_2.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+
+
+    - name: show the differnce between files
+      copy:
+          src: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+          dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+      check_mode: yes
+      diff: yes
+      register: diff
+    - name: print running config post check
+      debug:
+        msg: "{{ diff }}"
+
+
+---
+- hosts: localhost
+  tasks:
+    - name: Get Ansible Date
+      setup:
+        filter: "ansible_date_time"
+        gather_subset: "!all"
+      register: key_date
+    - debug: var=key_date.ansible_facts.ansible_date_time.date
+
+
+    - name: Store DTG as Fact
+      set_fact:
+        DTG: "{{ ansible_date_time }}"
+      register: DTG
+    - debug:
+        msg: "{{ ansible_date_time }}"
+
+    - name: craete variable for DTG
+      set_fact: datetime={{ DTG.ansible_facts.DTG.time +'_'+ DTG.ansible_facts.DTG.date +'_'}}
+    - debug: var=datetime
+
+
+- name: Running config pre check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check before power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+      register: pre_config
+
+    - name: print running config pre check
+      debug:
+        msg: "{{ pre_config }}"
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_pre
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+
+    - name: power down the device and pause for 60 sec
+      pause:
+        minutes: 1
+
+- name: Running config post check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Running config check after power down
+      cisco.nxos.nxos_command:
+        commands:
+          - show run
+          - show ip arp
+          - show vlan
+
+      register: post_config
+
+    - name: print running config post check
+      debug:
+        var: post_config
+
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - show run
+          - show ip arp
+          - show vlan
+
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: showoutput_post
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template_2.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+
+
+    - name: show the differnce between files
+      copy:
+          src: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_pre.txt"
+          dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}showoutput_post.txt"
+      check_mode: yes
+      diff: yes
+      register: diff
+    - name: print running config post check
+      debug:
+        msg: "{{ diff }}"
+
+
