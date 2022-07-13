@@ -1,0 +1,12 @@
+[router]
+10.211.250.14
+
+[router:vars]
+ansible_connection=network_cli
+ansible_network_os=ios
+ansible_user=admin
+ansible_password=cisco
+ansible_become=yes
+ansible_become_method=enable
+ansible_become_pass=cisco
+ansible_command_timeout=1000
