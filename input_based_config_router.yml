@@ -1,0 +1,53 @@
+---
+- name: IOS static
+  hosts: router
+
+  tasks:
+    - debug:
+         var: ansible_facts
+    - name: facts
+      ios_facts:
+        gather_subset: all
+      register: all_subset
+
+    - name: Interface config
+      ios_l3_interfaces:
+        config:
+          - name: loopback1
+            ipv4:
+              - address: 2.2.2.5 255.255.255.0
+        state: merged
+      register: int
+    - debug:
+        var: int
+
+    - name: show ip
+      ios_command:
+        commands:
+          - show ip interface brief
+      register: show_output_before
+
+    - debug:
+        var: show_output_before
+
+
+    - name: watch configuration pause for 60 sec
+      pause:
+        minutes: 1
+
+    - name: Delete interface
+      ios_config:
+        commands:
+          - no interface loopback1
+
+    - name: show ip
+      ios_command:
+        commands:
+          - show ip interface brief
+      register: show_output_after
+
+    - debug:
+        var: show_output_after
+
+
+
