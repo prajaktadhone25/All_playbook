@@ -1,5 +1,7 @@
 ---
 - hosts: localhost
+  vars:
+      ansible_buffer_read_timeout: 2
   tasks:
     - name: Get Ansible Date
       setup:
@@ -8,18 +10,12 @@
 
     - name: Store DTG as Fact
       set_fact:
-        DTG: "{{ ansible_date_time }}"
-      register: DTG
+        DTG: "{{ ansible_date_time.date }}"
 
-    - name: craete variable for DTG
-      set_fact: datetime={{ DTG.ansible_facts.DTG.time +'_'+ DTG.ansible_facts.DTG.date +'_'}}
-    - debug: var=datetime
-
-- name: Network Slowness Check
+- name: Traceroute Check
   connection: network_cli
   gather_facts: false
   hosts: switches
-
   tasks:
     - name: Get switch facts
       cisco.nxos.nxos_facts:
@@ -29,61 +25,51 @@
       debug:
         msg: "{{ ansible_user }}"
 
-    - name: Run basic checks
+    - name: traceroute command
       cisco.nxos.nxos_command:
         commands:
-          - show version
-          - show running-config
-          - show ip interface brief vrf all
-          - ping 10.211.250.28 vrf management
-          - ping 10.211.250.62 vrf management
-      register: ping_output
+#           - show version
+          - traceroute 10.211.250.28 vrf management
+      register: config
+
+    - name: print variable
+      debug:
+         var: config
+
+    - name: to find the string
+      set_fact:
+        tro: "{{ config|regex_search('* * *', multiline=True, ignorecase=True)}}"
+
     - name: print output
       debug:
-        msg: "{{ ping_output.stdout_lines }}"
+         var: tro
+
+    - name: "pick up avg value"
+
+      debug: var=config.stdout_lines[0][9]
+
+
+
+
+#
+#    - name: Print output
+#      debug:
+#        msg: "{{ config.stdout_lines }}"
+##        msg: "{{ config.stdout_lines[0][1] }}"
+#
+#    - name: find star index
+#      ansible.builtin.command: echo {{ item }}
+#      loop: "{{ config.stdout_lines|default([]) }}"
+#      when: item=="* * *"
+
+
+#      register: ping_output
+#    - name: print output
+#      debug:
+#        msg: "{{ ping_output.stdout_lines }}"
 #    - name: "pick up avg value"
 
-#    - debug: var=ping_output.stdout_lines[0][9].split("/")[3]
-#    - name: "pick up avg value"
-#      set_fact: avg={{ ping_output.stdout_lines[0][9].split("/")[3] }}
 
 
 
-#    - debug: var=ping_output.stdout_lines[0][9].split("/").strlen()
-
-#    - debug: msg:avg[9]
-#        msg: " round-trip min/avg/max {{ item.split().2 }}"
-#      loop: "{{ ping_output.stdout_lines.0 }}"
-#      when: item is match('^  round-trip min/avg/max(.*)$')
-
-#    - name: ignore error
-#      ansible.builtin.command: /bin/false
-#      ignore_error: yes
-
-    - name: Run basic checks
-      cisco.nxos.nxos_command:
-        commands:
-          - traceroute 10.211.250.15 vrf management
-      register: traceroute_output
-    - name: print output
-      debug:
-       msg: "{{traceroute_output.stdout_lines}}"
-- hosts: switches
-  gather_facts: false
-
-  vars:
-    command_list:
-          - ping 10.211.250.28 vrf management
-          - ping 10.211.250.62 vrf management
-          - traceroute 10.211.250.15 vrf management
-  tasks:
-    - name: Run the SHOW commands and save output
-      cisco.nxos.nxos_command:
-        commands: "{{ command_list }}"
-      register: ping_traceroute_output
-
-    - name: Put all the files together into one nice text file
-      template:
-        src: template.j2
-        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}ping_traceroute_output.txt"
 

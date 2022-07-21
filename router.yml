@@ -1,0 +1,71 @@
+---
+- name: IOS static
+  hosts: router
+
+  tasks:
+    - debug:
+         var: ansible_facts
+    - name: facts
+      ios_facts:
+        gather_subset: all
+      register: all_subset
+
+    - name: Interface config
+      ios_l3_interfaces:
+        config:
+          - name: loopback1
+          - name: GigabitEthernet2
+            ipv4:
+              - address: 2.2.2.5 255.255.255.0
+              - address: 1.1.1.1 255.255.255.0
+        state: merged
+      register: int
+
+    - debug:
+        var: int.before
+    - debug:
+        var: int.commands
+    - debug:
+        var: int.after
+
+    - name: No interface command
+      ios_config:
+        commands:
+          - no interface loopback1
+
+    - name: show ip
+      ios_command:
+        commands:
+          - show ip interface brief
+      register: show_output
+
+    - debug:
+        var: show_output
+
+
+
+#    - name: Interface config
+#      ios_l3_interfaces:
+#        config:
+#          - name: Loopback2
+#            ipv4:
+#              - address: 2.2.2.5 255.255.255.0
+#        state: deleted
+#      register: int
+#
+#    - debug:
+#        var: int.before
+#    - debug:
+#        var: int.commands
+#    - debug:
+#        var: int.after
+#
+#    - name: config static route
+#      ios_static_route:
+#        prefix: 1.1.1.1
+#        mask: 255.255.255.0
+#        interface: GigabitEthernet2
+#        state: present
+#      register: route
+#    - debug:
+#        var: route.commands
