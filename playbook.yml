@@ -10,12 +10,16 @@
       set_fact:
         DTG: "{{ ansible_date_time }}"
       register: DTG
-    - debug: var=DTG.ansible_facts.DTG.date,DTG.ansible_facts.DTG.time
 
-- name: Upgrade process
+    - name: craete variable for DTG
+      set_fact: datetime={{ DTG.ansible_facts.DTG.time +'_'+ DTG.ansible_facts.DTG.date +'_'}}
+    - debug: var=datetime
+
+- name: Network Slowness Check
   connection: network_cli
   gather_facts: false
   hosts: switches
+
   tasks:
     - name: Get switch facts
       cisco.nxos.nxos_facts:
@@ -25,48 +29,61 @@
       debug:
         msg: "{{ ansible_user }}"
 
-    - name: Back up running config
+    - name: Run basic checks
       cisco.nxos.nxos_command:
         commands:
-         - show run
-         - show interface status
-         - show version
-         - show vlan brief
-      register: ios_config_precheck
-    - name: print running config pre-check
+          - show version
+          - show running-config
+          - show ip interface brief vrf all
+          - ping 10.211.250.28 vrf management
+          - ping 10.211.250.62 vrf management
+      register: ping_output
+    - name: print output
       debug:
-        var: ios_config_precheck
-    - name: saving output in a file
-      copy:
-        content: "{{ ios_config_precheck }}"
-        dest: "/home/labuser/ansible-playbook-logs/ios_config_precheck.txt"
+        msg: "{{ ping_output.stdout_lines }}"
+#    - name: "pick up avg value"
 
-#    - name: save running config
-#      cisco.nxos.nxos_command:
-#        save_when: always
-#   - name: Copy image which could take 5 min at least
-#     net_put:
-#       src: "//10.10.10.1/images/ciscoimage.bin" # this needs to be edited
-#       dest: "DEST PATH" # this needs to be edited
-#     vars.yml:
-#       ansible_command_timeout: 600 # timer we can edit based on time for copy image
-#   - name: check MD5 checksum # need to update
+#    - debug: var=ping_output.stdout_lines[0][9].split("/")[3]
+#    - name: "pick up avg value"
+#      set_fact: avg={{ ping_output.stdout_lines[0][9].split("/")[3] }}
 
-#   - name: Change boot variable to new image
-#     ios_config:
-#       commands:
-#         - "boot system <PATH>" # this needs to be edited
-#       save_when: always
-#   - name: Reload the switch
-#     cli_command:
-#       command: reload
-#       prompt:
-#         - confirm
-#       answer:
-#         - 'y'
-#   - name: Wait for switch to come back online
-#     wait_for:
-#       host: "{{ ansible_net_hostname }}
-#       port: 22
-#       delay: 90
-#     delegate_to: localhost
+
+
+#    - debug: var=ping_output.stdout_lines[0][9].split("/").strlen()
+
+#    - debug: msg:avg[9]
+#        msg: " round-trip min/avg/max {{ item.split().2 }}"
+#      loop: "{{ ping_output.stdout_lines.0 }}"
+#      when: item is match('^  round-trip min/avg/max(.*)$')
+
+#    - name: ignore error
+#      ansible.builtin.command: /bin/false
+#      ignore_error: yes
+
+    - name: Run basic checks
+      cisco.nxos.nxos_command:
+        commands:
+          - traceroute 10.211.250.15 vrf management
+      register: traceroute_output
+    - name: print output
+      debug:
+       msg: "{{traceroute_output.stdout_lines}}"
+- hosts: switches
+  gather_facts: false
+
+  vars:
+    command_list:
+          - ping 10.211.250.28 vrf management
+          - ping 10.211.250.62 vrf management
+          - traceroute 10.211.250.15 vrf management
+  tasks:
+    - name: Run the SHOW commands and save output
+      cisco.nxos.nxos_command:
+        commands: "{{ command_list }}"
+      register: ping_traceroute_output
+
+    - name: Put all the files together into one nice text file
+      template:
+        src: template.j2
+        dest: "/home/labuser/ansible-playbook-logs/{{hostvars.localhost.datetime}}ping_traceroute_output.txt"
+

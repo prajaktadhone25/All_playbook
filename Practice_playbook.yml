@@ -1,0 +1,70 @@
+---
+- hosts: localhost
+  tasks:
+    - name: Get Ansible Date
+      setup:
+        filter: "ansible_date_time"
+        gather_subset: "!all"
+
+    - name: Store DTG as Fact
+      set_fact:
+        DTG: "{{ ansible_date_time.date }}"
+
+    - name: Create Directory {{hostvars.localhost.DTG}}
+      file:
+        path: ~/Ansible/backups/{{hostvars.localhost.DTG}}
+        state: directory
+#   run once: true
+
+
+- name: Network Slowness Check
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+#  vars.yml:
+#    ip_address:
+#     ip: 10:211.250.28
+
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Run basic checks
+      cisco.nxos.nxos_command:
+        commands:
+          - show version
+#          - show running-config
+#          - show ip interface brief vrf all
+#          - ping 10.211.250.28 vrf management
+#          - ping 10.211.250.62 vrf management
+      register: config
+
+      hosts: switches
+      gather_facts:false
+
+  tasks:
+    - name: save output to -/Ansible/backups/
+        copy:
+          ontent: "{{config.stdout[0]}}"
+          dest: "-/Ansible/backups/{{hostvars.localhost.DTG}}
+       
+    
+      
+            
+#    - name: Run basic checks
+#      cisco.nxos.nxos_command:
+#        commands:
+#          - traceroute 10.211.250.28 vrf management
+
+#    - debug:
+#        msg: "{{ config.before }}"
+#    - debug:
+#         msg: "{{config.command}}"
+#    - debug:
+#         msg: "{{config.before}}"
+

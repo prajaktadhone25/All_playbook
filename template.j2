@@ -1,0 +1,9 @@
+
+OUTPUT FROM SHOW COMMANDS for: {{ inventory_hostname }}
+
+{% for cmd in command_list %}
+############ {{ cmd }} ################
+
+{{ traceroute_output.stdout[loop.index0] }}
+
+{% endfor %}
