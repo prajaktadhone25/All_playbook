@@ -1,0 +1,19 @@
+          - prefix-set 6DG_OUT
+          - 193.35.11.0/24,
+          - 193.34.248.0/22,
+          - 193.35.10.0/24,
+          - 193.35.9.0/24,
+          - 194.36.70.0/23
+          - end-set
+          - !
+          - !
+          - neighbor-group AKAMAI
+          - address-family ipv4 unicast
+          - no route-policy AKAMAI_OUT out
+          - !
+          - router bgp 28846
+          - neighbor 72.52.20.97
+          - shut
+          - neighbor 72.52.55.205
+          - shut
+          - !

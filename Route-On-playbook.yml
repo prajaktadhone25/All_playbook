@@ -1,0 +1,158 @@
+---
+- hosts: localhost
+  tasks:
+    - name: Get Ansible Date
+      setup:
+        filter: "ansible_date_time"
+        gather_subset: "!all"
+
+    - name: Store DTG as Fact
+      set_fact:
+        DTG: "{{ ansible_date_time }}"
+      register: DTG
+
+    - name: craete variable for DTG
+      set_fact: datetime={{ DTG.ansible_facts.DTG.time +'_'+ DTG.ansible_facts.DTG.date +'_'}}
+    - debug: var=datetime
+
+######### Route-On execution on ITV-GRW-INET-RTR1A and  ITV-GRW-INET-RTR1B  #########
+- name: CLI config of RTR-1A
+  connection: network_cli
+  gather_facts: false
+  hosts: RTR1A
+  tasks:
+    - name: Get switch facts
+      cisco.ios.ios_facts:
+        gather_subset: all
+
+    - name: Route-off execution cmmand
+      ios_command:
+        commands:
+          src: tftp://10.211.250.13//home/labuser/Ansible/ITV_akamai/RTR-1A.txt
+          dest: running
+
+ name: CLI config of RTR-1B
+  connection: network_cli
+  gather_facts: false
+  hosts: RTR1B
+  tasks:
+    - name: Get switch facts
+      cisco.ios.ios_facts:
+        gather_subset: all
+
+    - name: CLI config of RTR-1B
+      ios_command:
+        commands:
+          copy:
+          src: tftp://10.211.250.13//home/labuser/Ansible/ITV_akamai/RTR-1A.txt
+          dest: running 
+
+- name: verify routes being advertised towards ISP 6DG RTR1A
+  connection: network_cli
+  gather_facts: false
+  hosts: RTR1A
+  tasks:
+    - name: Get switch facts
+      cisco.ios.ios_facts:
+        gather_subset: all
+
+    - name: run show ip bgp on RTR1A
+      ios_command:
+        commands:
+          - show ip bgp neighbor 85.92.9.145 advertised-routes
+      register: output_ip_bgp_A
+
+    - name: print running config pre check
+      debug:
+        msg: "{{ output_ip_bgp_A }}"
+
+  hosts: RTR1B
+  tasks:
+    - name: Get switch facts
+      cisco.ios.ios_facts:
+        gather_subset: all
+
+    - name: run show ip bgp on RTR1B
+      ios_command:
+        commands:
+          - show ip bgp neighbor 85.92.9.145 advertised-routes
+      register: output_ip_bgp_B
+
+    - name: print running config pre check
+      debug:
+        msg: "{{ output_ip_bgp_B }}"
+
+ name: Execute soft BGP reset command RTR1A
+  connection: network_cli
+  gather_facts: false
+  hosts: RTR1A
+  tasks:
+    - name: Get switch facts
+      cisco.ios.ios_facts:
+        gather_subset: all
+
+    - name: clear ip bgp on RTR1A
+      ios_command:
+        commands:
+          - clear ip bgp 85.92.199.145 soft out
+      register: output_clear_ip_bgp_A
+
+    - name: print running config pre check
+      debug:
+        msg: "{{ output_clear_ip_bgp_A }}"
+
+  hosts: RTR1B
+  tasks:
+    - name: Get switch facts
+      cisco.ios.ios_facts:
+        gather_subset: all
+
+    - name: clear ip bgp on RTR1B
+      ios_command:
+        commands:
+          - clear ip bgp 94.247.96.17 soft out
+      register: output_clear_ip_bgp_B
+
+    - name: print running config pre check
+      debug:
+        msg: "{{ output_clear_ip_bgp_B}}"
+
+name: Verify Routes stopped
+  connection: network_cli
+  gather_facts: false
+  hosts: RTR1A
+  tasks:
+    - name: Get switch facts
+      cisco.ios.ios_facts:
+        gather_subset: all
+
+    - name: show ip bgp on RTR1A
+      ios_command:
+        commands:
+          - show ip bgp neighbor 72.52.20.97 advertised-routes
+          - show ip bgp neighbor 72.52.55.205 advertised-routes
+      register: output_show_ip_bgp_A
+
+    - name: print running config pre check
+      debug:
+        msg: "{{ output_show_ip_bgp_A}}"
+
+  hosts: RTR1B
+  tasks:
+    - name: Get switch facts
+      cisco.ios.ios_facts:
+        gather_subset: all
+
+    - name: show ip bgp on RTR1B
+      ios_command:
+        commands:
+           - show ip bgp neighbor 72.52.20.99 advertised-routes
+           - show ip bgp neighbor 72.52.55.213 advertised-routes
+      register: output_show_ip_bgp_B
+
+    - name: print running config pre check
+      debug:
+        msg: "{{ output_show_ip_bgp_B}}"
+
+
+

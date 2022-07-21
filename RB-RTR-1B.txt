@@ -1,0 +1,13 @@
+prefix-set 6DG_OUT
+194.36.67.0/24
+end-set
+!
+neighbor-group AKAMAI
+address-family ipv4 unicast
+route-policy AKAMAI_OUT out
+!
+router bgp 28846
+neighbor 72.52.20.99
+no shut
+neighbor 72.52.55.213
+exit
