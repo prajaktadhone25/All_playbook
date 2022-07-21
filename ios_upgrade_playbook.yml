@@ -1,0 +1,36 @@
+---
+- hosts: all
+  tasks:
+    - name: Get Ansible Date
+      setup:
+        filter: "ansible_date_time"
+        gather_subset: "!all"
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+#    - name: Back up running config on router
+#      cisco.ios.ios_command:
+#        commands:
+##         - show run
+##         - show interface status
+#         - show version
+#         - show vlan brief
+#      register: backup_router
+
+    - name: Back up running config on switche
+      cisco.nxos.nxos_command:
+        commands:
+         - show run
+         - show interface status
+         - show version
+         - show vlan brief
+      register: backup_switch
+    - name: print running backup_switch
+      debug:
+        var: backup_switch
+#    - name: saving output in a file
+#      copy:
+#        content: "{{ ios_config_precheck }}"
+#        dest: "/home/labuser/ansible-playbook-logs/ios_config_precheck.txt"

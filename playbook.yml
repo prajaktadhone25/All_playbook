@@ -1,0 +1,72 @@
+---
+- hosts: localhost
+  tasks:
+    - name: Get Ansible Date
+      setup:
+        filter: "ansible_date_time"
+        gather_subset: "!all"
+
+    - name: Store DTG as Fact
+      set_fact:
+        DTG: "{{ ansible_date_time }}"
+      register: DTG
+    - debug: var=DTG.ansible_facts.DTG.date,DTG.ansible_facts.DTG.time
+
+- name: Upgrade process
+  connection: network_cli
+  gather_facts: false
+  hosts: switches
+  tasks:
+    - name: Get switch facts
+      cisco.nxos.nxos_facts:
+        gather_subset: all
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_user }}"
+
+    - name: Back up running config
+      cisco.nxos.nxos_command:
+        commands:
+         - show run
+         - show interface status
+         - show version
+         - show vlan brief
+      register: ios_config_precheck
+    - name: print running config pre-check
+      debug:
+        var: ios_config_precheck
+    - name: saving output in a file
+      copy:
+        content: "{{ ios_config_precheck }}"
+        dest: "/home/labuser/ansible-playbook-logs/ios_config_precheck.txt"
+
+#    - name: save running config
+#      cisco.nxos.nxos_command:
+#        save_when: always
+#   - name: Copy image which could take 5 min at least
+#     net_put:
+#       src: "//10.10.10.1/images/ciscoimage.bin" # this needs to be edited
+#       dest: "DEST PATH" # this needs to be edited
+#     vars.yml:
+#       ansible_command_timeout: 600 # timer we can edit based on time for copy image
+#   - name: check MD5 checksum # need to update
+
+#   - name: Change boot variable to new image
+#     ios_config:
+#       commands:
+#         - "boot system <PATH>" # this needs to be edited
+#       save_when: always
+#   - name: Reload the switch
+#     cli_command:
+#       command: reload
+#       prompt:
+#         - confirm
+#       answer:
+#         - 'y'
+#   - name: Wait for switch to come back online
+#     wait_for:
+#       host: "{{ ansible_net_hostname }}
+#       port: 22
+#       delay: 90
+#     delegate_to: localhost
