@@ -1,75 +1,49 @@
 ---
 - hosts: localhost
-  vars:
-      ansible_buffer_read_timeout: 2
+
   tasks:
-    - name: Get Ansible Date
-      setup:
-        filter: "ansible_date_time"
-        gather_subset: "!all"
+   - name: Get ansible date/time facts
+     setup:
+       filter: "ansible_date_time"
+       gather_subset: "!all"
 
-    - name: Store DTG as Fact
-      set_fact:
-        DTG: "{{ ansible_date_time.date }}"
+   - name: Store Date and DTG as fact
+     set_fact:
+       DT: "{{ ansible_date_time.date }}"
+       DTG: "{{ ansible_date_time.date +'_'+ ansible_date_time.time }}"
 
-- name: Traceroute Check
-  connection: network_cli
-  gather_facts: false
-  hosts: switches
+   - name: Create Directory with Date Name{{hostvars.localhost.DT}}
+     file:
+      path: /home/labuser/ansible-playbook-logs/backups/{{hostvars.localhost.DT}}
+      state: directory
+  run_once: true
+
+- hosts: switches
   tasks:
-    - name: Get switch facts
-      cisco.nxos.nxos_facts:
-        gather_subset: all
+   - name: Backup
+     cisco.nxos.nxos_command:
+       commands: show run
+     register: config
 
-    - name: debug
-      debug:
-        msg: "{{ ansible_user }}"
+   - name: print config
+     debug:
+       var: config
 
-    - name: traceroute command
-      cisco.nxos.nxos_command:
-        commands:
-#           - show version
-          - traceroute 10.211.250.28 vrf management
-      register: config
-
-    - name: print variable
-      debug:
-         var: config
-
-    - name: to find the string
-      set_fact:
-        tro: "{{ config|regex_search('* * *', multiline=True, ignorecase=True)}}"
-
-    - name: print output
-      debug:
-         var: tro
-
-    - name: "pick up avg value"
-
-      debug: var=config.stdout_lines[0][9]
+   - name: Save output to /home/labuser/ansible-playbook-logs/backups/
+     copy:
+       content: "{{config.stdout[0]}}"
+       dest: "/home/labuser/ansible-playbook-logs/backups/{{hostvars.localhost.DT}}/{{hostvars.localhost.DTG}}-config.txt"
 
 
-
-
-#
-#    - name: Print output
-#      debug:
-#        msg: "{{ config.stdout_lines }}"
-##        msg: "{{ config.stdout_lines[0][1] }}"
-#
-#    - name: find star index
-#      ansible.builtin.command: echo {{ item }}
-#      loop: "{{ config.stdout_lines|default([]) }}"
-#      when: item=="* * *"
-
-
-#      register: ping_output
-#    - name: print output
-#      debug:
-#        msg: "{{ ping_output.stdout_lines }}"
-#    - name: "pick up avg value"
-
-
-
-
-
+- hosts: localhost
+  tasks:
+    - name: run crone job to load data at every 30th minute of every hour
+      ansible.builtin.cron:
+#      become: yes
+#      become_method: sudo
+#      cron:
+        name: "load_data"
+        minute: "1"
+        hour: "*"
+        job: "ansible-playbook -i inventory playbook.yml"
+        state: present
