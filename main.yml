@@ -1,0 +1,12 @@
+---
+- name: ping Executing
+  shell: " {{ ping_command }} {{ item }}
+  loop: "{{ groups['targets'] }}
+  register: command_output
+  ignore_errors; yes
+  no_log: true
+  changed_when: false
+     
+- name: print the ping output
+  debug: 
+    var=command_output
