@@ -1,0 +1,13 @@
+---
+- name: Network slowness check
+  hosts:
+    - sources
+  gather_facts: no
+  
+  vars_files:
+    - "/var/jenkins_home/workspace/Continuous_Integration/{{job_name}}/test_connect/NetworkSlowness.yml"
+
+
+  roles:
+    - test_connect
+
